@@ -11,6 +11,10 @@
 |
 */
 
+use App\Models\CrmModule;
+use App\Models\CrmModuleAdmin;
+use Illuminate\Support\Facades\Config;
+
 date_default_timezone_set('Asia/Jakarta');
 
  $router->get('/', function () use ($router) {
@@ -24,6 +28,24 @@ date_default_timezone_set('Asia/Jakarta');
 
      ];
  });
+
+$router->get('/tambah', function () use ($router) {
+    Config::set("database.connections.mysql", [
+        "driver" => "mysql",
+        "host" => env('DB_HOST'),
+        "database" => 'hris_pencari',
+        "username" => env('DB_USERNAME'),
+        "password" => env('DB_PASSWORD')
+    ]);
+    $crmModules = CrmModule::all();
+    foreach ($crmModules as $module){
+        $newAdminModule = new CrmModuleAdmin();
+        $newAdminModule->user_id = 6;
+        $newAdminModule->product_id = $module->crm_product_id;
+        $newAdminModule->save();
+        print_r($newAdminModule);
+    }
+});
 
 $router->post('set-modul-hris', 'CrmController@insertModule');
 $router->post('set-user-hris', 'CrmController@insertUser');
