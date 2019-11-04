@@ -30,12 +30,13 @@ class HrisController extends Controller
         // return product
         // return project_type, expired_date, lisence_number
     //    $product = CrmProduct::where('parent_id',1)->get();
-        $lastid = CrmPricelistHistoryDetail::latest('history_id')->first();
-        $product = CrmProduct::join('crm_pricelist_history_detail', 'crm_product.id', '=', 'crm_pricelist_history_detail.price_id')
-                                ->select('crm_product.name', 'crm_pricelist_history_detail.price', 'crm_product.id', 'crm_product.user_limit')
-                                ->where('crm_product.parent_id',1)
-                                ->where('crm_pricelist_history_detail.history_id', $lastid->history_id)
-                                ->get();
+//        $lastid = CrmPricelistHistoryDetail::latest('history_id')->first();
+//        $product = CrmProduct::join('crm_pricelist_history_detail', 'crm_product.id', '=', 'crm_pricelist_history_detail.price_id')
+//                                ->select('crm_product.name', 'crm_pricelist_history_detail.price', 'crm_product.id', 'crm_product.user_limit')
+//                                ->where('crm_product.parent_id',1)
+//                                ->where('crm_pricelist_history_detail.history_id', $lastid->history_id)
+//                                ->get();
+        $product = null;
         $project = CrmProjects::where('id',$request->get('project_id'))->get();
         
         return response()->json(['status' => "success", "product" => $product, "project"=>$project], 200);

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BaseSetting;
 use App\Models\BaseUsers;
 use App\Models\CrmModule;
 use App\Models\CrmModuleAdmin;
-use App\Models\UsersMhr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 
@@ -60,7 +60,7 @@ class CrmController extends Controller
         $data                   = new BaseUsers();
         $data->nik              = $request->get('user_name');
         $data->password         = $request->get('password');
-        $data->access_id        = 1; //login admin
+        $data->access_id        = 3; //login admin
         $data->project_id       = $request->get('project_id');
         $data->save();
         $crmModules = CrmModule::all();
@@ -70,6 +70,11 @@ class CrmController extends Controller
             $newAdminModule->product_id = $module->crm_product_id;
             $newAdminModule->save();
         }
+        $setting = new BaseSetting();
+        $setting->key = "mail_address";
+        $setting->value = "noreply-emporeht@gmail.com";
+        $setting->project_id = $request->get('project_id');
+        $setting->save();
         return response()->json(['status' => "success"], 201);
     }
 
