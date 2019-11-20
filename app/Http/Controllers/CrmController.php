@@ -90,14 +90,15 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
-        CrmModule::where('project_id',$request->get('project_id'))->delete();
+        CrmModule::where([
+            'project_id'=>$request->get('project_id'),
+            'crm_product_id'=>$request->get('crm_product_id')
+        ])->delete();
 
         $data                   = new CrmModule();
         $data->project_id       = $request->get('project_id');
         $data->project_name     = $request->get('project_name');
         $data->client_name      = $request->get('client_name');
-        //$data->user_name        = $request->get('user_name');
-        //$data->password         = $request->get('password');
         $data->crm_product_id   = $request->get('crm_product_id');
         if($request->get('limit_user') > 0){
             $data->limit_user       = $request->get('limit_user');

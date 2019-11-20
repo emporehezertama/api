@@ -1,6 +1,7 @@
 <?php
 namespace App\Console\Commands;
 
+use App\Models\AbsensiItem;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
