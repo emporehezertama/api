@@ -56,4 +56,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->hasOne('App\Models\EmporeOrganisasiManager', 'id', 'empore_organisasi_manager_id');
     }
+    public function modules()
+    {
+        return $this->hasMany('App\Models\CrmModuleAdmin', 'user_id');
+    }
 }

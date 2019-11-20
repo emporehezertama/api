@@ -50,6 +50,7 @@ $router->get('/tambah', function () use ($router) {
 $router->post('set-modul-hris', 'CrmController@insertModule');
 $router->post('set-user-hris', 'CrmController@insertUser');
 $router->post('update-modul-hris', 'CrmController@updateModule');
+$router->post('delete-modul-hris', 'CrmController@deleteModule');
 
 $router->post('get-modul-crm', 'HrisController@getModule');
 $router->post('update-modul-crm', 'HrisController@updateModuleCrm');

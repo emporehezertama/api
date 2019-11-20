@@ -63,13 +63,13 @@ class CrmController extends Controller
         $data->access_id        = 3; //login admin
         $data->project_id       = $request->get('project_id');
         $data->save();
-        $crmModules = CrmModule::all();
-        foreach ($crmModules as $module){
-            $newAdminModule = new CrmModuleAdmin();
-            $newAdminModule->user_id = $data->id;
-            $newAdminModule->product_id = $module->crm_product_id;
-            $newAdminModule->save();
-        }
+//        $crmModules = CrmModule::all();
+//        foreach ($crmModules as $module){
+//            $newAdminModule = new CrmModuleAdmin();
+//            $newAdminModule->user_id = $data->id;
+//            $newAdminModule->product_id = $module->crm_product_id;
+//            $newAdminModule->save();
+//        }
         $setting = new BaseSetting();
         $setting->key = "mail_address";
         $setting->value = "noreply-emporeht@gmail.com";
@@ -107,5 +107,30 @@ class CrmController extends Controller
         $data->save();
 
         return response()->json(['status' => "success", "project_name" => $data->project_name], 201);
+    }
+    public function deleteModule(Request $request)
+    {
+        //delete dulu data dri crm module yang sudah ada kemudian nanti insert yang baru
+        if($request->get('db_name')!=null) {
+            Config::set("database.connections.mysql", [
+                "driver" => "mysql",
+                "host" => env('DB_HOST'),
+                "database" => $request->get('db_name'),
+                "username" => env('DB_USERNAME'),
+                "password" => env('DB_PASSWORD')
+            ]);
+        }
+        CrmModule::where([
+            'project_id'=>$request->get('project_id'),
+            'crm_product_id'=>$request->get('crm_product_id')
+        ])->delete();
+
+        CrmModuleAdmin::join('users as u', 'user_id','=','u.id')
+            ->where([
+                'product_id'=>$request->get('crm_product_id'),
+                'u.project_id'=>$request->get('project_id')
+             ])->delete();
+
+        return response()->json(['status' => "success"], 201);
     }
 }
