@@ -192,7 +192,7 @@ class AttendanceController extends Controller
 
                         for($x = 0; $x < count($shiftDetail); $x++){
                             if($shiftDetail[$x]->day == date('l', strtotime($request->checktime))){
-                                $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
+                                $awal  = strtotime($item->date .' '. $shiftDetail[$x]->clock_in .':00');
                                 $akhir = strtotime($request->checktime);
                                 $diff  = $akhir - $awal;
 
