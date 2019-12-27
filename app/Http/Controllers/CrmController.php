@@ -70,9 +70,14 @@ class CrmController extends Controller
 //            $newAdminModule->product_id = $module->crm_product_id;
 //            $newAdminModule->save();
 //        }
+//        $setting = new BaseSetting();
+//        $setting->key = "mail_address";
+//        $setting->value = "noreply-emporeht@gmail.com";
+//        $setting->project_id = $request->get('project_id');
+//        $setting->save();
         $setting = new BaseSetting();
-        $setting->key = "mail_address";
-        $setting->value = "noreply-emporeht@gmail.com";
+        $setting->key = "struktur_organisasi";
+        $setting->value = "3";
         $setting->project_id = $request->get('project_id');
         $setting->save();
         return response()->json(['status' => "success"], 201);

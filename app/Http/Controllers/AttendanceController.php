@@ -345,6 +345,9 @@ class AttendanceController extends Controller
 
                             $item->early = $jam .':'. $menit;
                         }
+                        else{
+                            $item->early = null;
+                        }
 
 
                     }
