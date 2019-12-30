@@ -134,6 +134,7 @@ class AttendanceController extends Controller
                 $item->date         = date('Y-m-d', strtotime($request->checktime));
                 $item->absensi_device_id = 11;
                 $item->timetable    = date('l', strtotime($request->checktime));
+                $item->shift_id     = $user->shift_id;
                 $item->ac_no        = $request->sn;
             }
 
