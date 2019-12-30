@@ -135,6 +135,13 @@ class AttendanceController extends Controller
                 $item->absensi_device_id = 11;
                 $item->timetable    = date('l', strtotime($request->checktime));
                 $item->shift_id     = $user->shift_id;
+                if($user->shift_id){
+                    $shift = Shift::where('id', $user->shift_id)->first();
+                    $item->is_holiday = $shift->is_holiday;
+                }
+                else{
+                    $item->is_holiday = 0;
+                }
                 $item->ac_no        = $request->sn;
             }
 
