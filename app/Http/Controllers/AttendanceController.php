@@ -158,7 +158,7 @@ class AttendanceController extends Controller
                         if(count($arrayDays) > 0){
                             if(!in_array(date('l', strtotime(date('Y-m-d H:i:s'))), $arrayDays)){
                                 $item->shift_id   = 0;
-                                $item->is_holiday = 0;
+                                $item->is_holiday = $shift->is_holiday;
                             }
                             else{
                                 $item->shift_id   = $user->shift_id;
