@@ -22,7 +22,7 @@ class AttendanceController extends Controller
      */
     public function __construct()
     {
-        
+
     }
 
     /**
@@ -176,8 +176,11 @@ class AttendanceController extends Controller
                                 }
                             }
                         }
-                    }
-//                }
+                      }
+                      else{
+                          $item->early = null;
+                      }
+
             }
             else
             {
@@ -238,17 +241,17 @@ class AttendanceController extends Controller
         if($user)
         {
             if($request->type == 1)
-                $imageName = 'in.jpg';   
+                $imageName = 'in.jpg';
             else
-                $imageName = 'out.jpg';   
-            
+                $imageName = 'out.jpg';
+
             $image_parts = explode(";base64,", $request->file);
             $image_type_aux = explode("image/", @$image_parts[0]);
             $image_type = @$image_type_aux[1];
             $image_base64 = base64_decode(@$image_parts[1]);
 
             $path = env('PATH_ATTENDANCE_UPLOAD'). '/'.$user->id.'/'.date('Y-m-d');
-            
+
             //Check if the directory already exists.
             if(!is_dir($path)){
                 //Directory does not exist, so lets create it.
@@ -264,7 +267,7 @@ class AttendanceController extends Controller
 
             // save image
             $img->save($path.'/'. $imageName);
-            
+
             // inject attendance
             // replace time server
             $request->time = date('H:i');
@@ -273,23 +276,23 @@ class AttendanceController extends Controller
             $item               = AbsensiItemMobile::whereDate('date', '=',$request->date)->where('user_id', $user->id)->first();
             if(!$item)
             {
-                $item               = new AbsensiItemMobile();   
+                $item               = new AbsensiItemMobile();
                 $item->user_id      = $user->id;
                 $item->date         = $request->date;
-                $item->timetable    = date('l', strtotime($request->date));   
-                $item->absensi_device_id = 10;           
-            }   
+                $item->timetable    = date('l', strtotime($request->date));
+                $item->absensi_device_id = 10;
+            }
 
             if($request->type == 1)
             {
-                if(empty($item->clock_in)) 
+                if(empty($item->clock_in))
                 {
                     $item->clock_in = $request->time;
                     $item->pic          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->long         = $request->long;
                     $item->lat          = $request->lat;
                 }
-                
+
                 if(isset($user->absensiSetting->clock_in))
                 {
                     $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
@@ -297,7 +300,7 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $jam = abs($jam);
@@ -326,7 +329,7 @@ class AttendanceController extends Controller
 
                     $jam = $jam <= 9 ? "0".$jam : $jam;
 
-                    $item->work_time        = $jam .':'. $menit;  
+                    $item->work_time        = $jam .':'. $menit;
                 }
 
                 if(isset($user->absensiSetting->clock_out))
@@ -336,14 +339,14 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $awal  = date_create($item->date .' '. $user->absensiSetting->clock_out .':00');
                         $akhir = date_create($item->date .' '. $request->time .':00'); // waktu sekarang, pukul 06:13
                         $diff  = date_diff( $akhir, $awal );
-                        
-                        $item->early = $diff->h .':'. $diff->i; 
+
+                        $item->early = $diff->h .':'. $diff->i;
                     }
                 }
             }
@@ -371,17 +374,17 @@ class AttendanceController extends Controller
         if($user)
         {
             if($request->type == 1)
-                $imageName = 'in.jpg';   
+                $imageName = 'in.jpg';
             else
-                $imageName = 'out.jpg';   
-            
+                $imageName = 'out.jpg';
+
             $image_parts = explode(";base64,", $request->file);
             $image_type_aux = explode("image/", @$image_parts[0]);
             $image_type = @$image_type_aux[1];
             $image_base64 = base64_decode(@$image_parts[1]);
 
             $path = env('PATH_ATTENDANCE_UPLOAD_MHR'). '/'.$user->id.'/'.date('Y-m-d');
-            
+
             //Check if the directory already exists.
             if(!is_dir($path)){
                 //Directory does not exist, so lets create it.
@@ -396,7 +399,7 @@ class AttendanceController extends Controller
             $img->resize( ceil( ($img->width() / 2 ) / 2), ceil(($img->height() /2) / 2));
 
             $img->save($path.'/'. $imageName);
-            
+
             // inject attendance
             // replace time server
             $request->time = date('H:i');
@@ -405,23 +408,23 @@ class AttendanceController extends Controller
             $item               = AbsensiItemMhr::whereDate('date', '=',$request->date)->where('user_id', $user->id)->first();
             if(!$item)
             {
-                $item               = new AbsensiItemMhr();   
+                $item               = new AbsensiItemMhr();
                 $item->user_id      = $user->id;
                 $item->date         = $request->date;
-                $item->timetable    = date('l', strtotime($request->date));   
-                $item->absensi_device_id = 10;           
-            }   
+                $item->timetable    = date('l', strtotime($request->date));
+                $item->absensi_device_id = 10;
+            }
 
             if($request->type == 1)
             {
-                if(empty($item->clock_in)) 
+                if(empty($item->clock_in))
                 {
                     $item->clock_in = $request->time;
                     $item->pic          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->long         = $request->long;
                     $item->lat          = $request->lat;
                 }
-                
+
                 if(isset($user->absensiSetting->clock_in))
                 {
                     $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
@@ -429,7 +432,7 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $jam = abs($jam);
@@ -459,7 +462,7 @@ class AttendanceController extends Controller
                     $jam = $jam <= 9 ? "0".$jam : $jam;
                     $menit = $menit <= 9 ? "0".$menit : $menit;
 
-                    $item->work_time        = $jam .':'. $menit;  
+                    $item->work_time        = $jam .':'. $menit;
                 }
 
                 if(isset($user->absensiSetting->clock_out))
@@ -475,11 +478,11 @@ class AttendanceController extends Controller
                         $awal  = date_create($item->date .' '. $user->absensiSetting->clock_out .':00');
                         $akhir = date_create($item->date .' '. $request->time .':00'); // waktu sekarang, pukul 06:13
                         $diff  = date_diff( $akhir, $awal );
-                        
+
                         $i = $diff->i <= 9 ? "0".$diff->i : $diff->i;
                         $h = $diff->h <=9 ? "0". $diff->h : $diff->h;
 
-                        $item->early = $h .':'. $i; 
+                        $item->early = $h .':'. $i;
                     }
                 }
             }
@@ -495,7 +498,7 @@ class AttendanceController extends Controller
     }
 
     public function getAbsensi(Request $request)
-    {  
+    {
         // $user   = \App\User::where('absensi_number', $request->absensi_number)->first();
         // if($user){
         //     $data = new AbsensiItem();
@@ -513,7 +516,7 @@ class AttendanceController extends Controller
         //         $dataMhr->clock_in     = date('H:i');
         //         $dataMhr->user_id      = $userMhr->id;
         //         $dataMhr->save();
-    
+
         //         return response()->json(['status' => "success"], 200);
         //     }else{
         //         return response()->json(['status' => "error"], 200);
@@ -521,8 +524,8 @@ class AttendanceController extends Controller
         // }
         $user   = UsersMhr::latest()->first();
         return $user;
-        
-       
-        
+
+
+
     }
 }
