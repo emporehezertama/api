@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 use App\User;
 use Illuminate\Http\Request;
@@ -12,7 +11,7 @@ use App\Models\Cabang;
 use App\Models\Shift;
 use App\Models\ShiftDetail;
 use Illuminate\Support\Facades\Validator;
-
+// use Carbon;
 class AttendanceController extends Controller
 {
     /**
@@ -22,9 +21,8 @@ class AttendanceController extends Controller
      */
     public function __construct()
     {
-        
-    }
 
+    }
     /**
      * Finger Store
      * @return void
@@ -32,7 +30,6 @@ class AttendanceController extends Controller
     public function attendanceCheckAuth(Request $request)
     {
         $user = UsersDemoEmp::where('nik', $request->nik)->where('apikey', $request->apikey)->first();
-
         if($user)
         {
             $attendance = AbsensiItemMobile::where('user_id', $user->id)->whereDate('date', $request->date)->first();
@@ -42,17 +39,14 @@ class AttendanceController extends Controller
                 {
                     return response()->json(['status' => 2], 201);
                 }
-
                 if($attendance->clock_in != "" and $attendance->clock_out != "")
                 {
                     return response()->json(['status' => 3], 201);
                 }
             }
-
             return response()->json(['status' => 1], 201);
         }
     }
-
     /**
      * Finger Store
      * @return void
@@ -60,7 +54,6 @@ class AttendanceController extends Controller
     public function attendanceCheckAuthMhr(Request $request)
     {
         $user = UsersMhr::where('nik', $request->nik)->where('apikey', $request->apikey)->first();
-
         if($user)
         {
             $attendance = AbsensiItemMhr::where('user_id', $user->id)->whereDate('date', $request->date)->first();
@@ -70,17 +63,14 @@ class AttendanceController extends Controller
                 {
                     return response()->json(['status' => 2], 201);
                 }
-
                 if($attendance->clock_in != "" and $attendance->clock_out != "")
                 {
                     return response()->json(['status' => 3], 201);
                 }
             }
-
             return response()->json(['status' => 1], 201);
         }
     }
-
     /**
      * Finger Store
      * @return void
@@ -108,15 +98,36 @@ class AttendanceController extends Controller
             $user = UsersMhr::where('absensi_number', $request->absensi_number)->first();
         }
 
+        if($user->cabang_id){
+            $branch = Cabang::where('id', $user->cabang_id)->first();
+            if($branch->timezone){
+                if($branch->timezone == 'WIB (GMT +7)'){
+                    date_default_timezone_set('Asia/Jakarta');
+                }
+                else if($branch->timezone == 'WITA (GMT +8)'){
+                    date_default_timezone_set('Asia/Makassar');
+                }
+                else{
+                    date_default_timezone_set('Asia/Jayapura');
+                }
+            }
+            else{
+                date_default_timezone_set('Asia/Jakarta');
+            }
+        }
+        else{
+            date_default_timezone_set('Asia/Jakarta');
+        }
+        // info(date('Y-m-d H:i:s'));
         if($user) // Jika absensi number valid
         {
             if($request->sn == 'A3AG184660639') // Punya Empore
             {
-                $item = AbsensiItem::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime($request->checktime)))->first();
+                $item = AbsensiItem::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime(date('Y-m-d H:i:s'))))->first();
             }
             else
             {
-                $item = AbsensiItemMhr::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime($request->checktime)))->first();
+                $item = AbsensiItemMhr::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime(date('Y-m-d H:i:s'))))->first();
             }
             if(!$item) // Jika user tersebut belum pernah clock in, buat record baru
             {
@@ -128,20 +139,49 @@ class AttendanceController extends Controller
                 {
                     $item = new AbsensiItemMhr();
                 }
-
                 // inject attendance
                 $item->user_id      = $user->id;
-                $item->date         = date('Y-m-d', strtotime($request->checktime));
+                $item->date         = date('Y-m-d', strtotime(date('Y-m-d H:i:s')));
                 $item->absensi_device_id = 11;
-                $item->timetable    = date('l', strtotime($request->checktime));
+                $item->timetable    = date('l', strtotime(date('Y-m-d H:i:s')));
+                if($user->shift_id){
+                    $shift = Shift::where('id', $user->shift_id)->first();
+                    if($shift){
+                        $shiftDetail = ShiftDetail::where('shift_id', $shift->id)->get();
+                        $arrayDays = [];
+                        if(count($shiftDetail) > 0){
+                            for($x = 0; $x < count($shiftDetail); $x++){
+                                array_push($arrayDays, $shiftDetail[$x]->day);
+                            }
+                        }
+
+                        if(count($arrayDays) > 0){
+                            if(!in_array(date('l', strtotime(date('Y-m-d H:i:s'))), $arrayDays)){
+                                $item->shift_id   = 0;
+                                $item->is_holiday = $shift->is_holiday;
+                            }
+                            else{
+                                $item->shift_id   = $user->shift_id;
+                                $item->is_holiday = $shift->is_holiday;
+                            }
+                        }
+                    }
+                    else{
+                        $item->shift_id   = null;
+                        $item->is_holiday = 0;
+                    }
+                }
+                else{
+                    $item->shift_id   = null;
+                    $item->is_holiday = 0;
+                }
                 $item->ac_no        = $request->sn;
             }
-
             if($request->checktype == 1) // 1 = clockout
             {
 //                if($item->clock_out =="") // cek apakah belum clock out, kalau belum, update clock out
 //                {
-                    $item->clock_out = date('H:i', strtotime($request->checktime)); // waktu sekarang
+                    $item->clock_out = date('H:i', strtotime(date('Y-m-d H:i:s'))); // waktu sekarang
                     if($item->clock_in!="") {
                         $akhir = strtotime($item->date . ' ' . $item->clock_out . ':00'); //waktu checkin
                         $awal = strtotime($item->date . ' ' . $item->clock_in . ':00'); // waktu checkout
@@ -158,20 +198,17 @@ class AttendanceController extends Controller
                     if(isset($user->shift_id))
                     {
                         $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
-
                         for($x = 0; $x < count($shiftDetail); $x++){
-                            if($shiftDetail[$x]->day == date('l', strtotime($request->checktime))){
+                            if($shiftDetail[$x]->day == date('l', strtotime(date('Y-m-d H:i:s')))){
                                 $akhir  = strtotime($item->date .' '. $shiftDetail[$x]->clock_out .':00'); //waktu batas clockout
-                                $awal = strtotime($request->checktime); // waktu checkout
+                                $awal = strtotime(date('Y-m-d H:i:s')); // waktu checkout
                                 $diff  = $akhir - $awal; // selisih waktu batas dan checkout
-
                                 if($diff > 0) // jika yang bersangkutan clock out lebih awal
                                 {
                                     $jam   = floor($diff / (60 * 60));
                                     $menit = floor(($diff - $jam * (60 * 60)) / 60);
                                     $jam = $jam <= 9 ? "0".$jam : $jam;
                                     $menit = $menit <= 9 ? "0".$menit : $menit;
-
                                     $item->early = $jam .':'. $menit;
                                 }
                             }
@@ -192,18 +229,15 @@ class AttendanceController extends Controller
                 //0 = clockin
                 if($item->clock_in == "") // cek apakah belum clock in, kalau belum, update clock in
                 {
-                    $item->clock_in = date('H:i', strtotime($request->checktime));
-
+                    $item->clock_in = date('H:i', strtotime(date('Y-m-d H:i:s')));
                     if(isset($user->shift_id))
                     {
                         $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
-
                         for($x = 0; $x < count($shiftDetail); $x++){
-                            if($shiftDetail[$x]->day == date('l', strtotime($request->checktime))){
-                                $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
-                                $akhir = strtotime($request->checktime);
+                            if($shiftDetail[$x]->day == date('l', strtotime(date('Y-m-d H:i:s')))){
+                                $awal  = strtotime($item->date .' '. $shiftDetail[$x]->clock_in .':00');
+                                $akhir = strtotime(date('Y-m-d H:i:s'));
                                 $diff  = $akhir - $awal;
-
                                 if($diff > 0){ // kalau telat
                                     $jam   = floor($diff / (60 * 60));
                                     $menit = floor(($diff - $jam * (60 * 60)) / 60);
@@ -216,10 +250,8 @@ class AttendanceController extends Controller
                     }
                 }
             }
-
             $timezone = Cabang::where('id', $user->cabang_id)->first();
             $timezone = $timezone->timezone;
-
             $item->timezone = $timezone;
             $item->save();
             return response()->json(['status' => "success"], 201);
@@ -230,9 +262,7 @@ class AttendanceController extends Controller
         /**
          * END
          */
-
     }
-
     /**
      * Get Send From Device
      * @param  Request $request
@@ -241,63 +271,56 @@ class AttendanceController extends Controller
     public function send(Request $request)
     {
         header('Access-Control-Allow-Origin: *');
-
         $user = UsersDemoEmp::where('nik', $request->nik)->first();
         if($user)
         {
             if($request->type == 1)
-                $imageName = 'in.jpg';   
+                $imageName = 'in.jpg';
             else
-                $imageName = 'out.jpg';   
-            
+                $imageName = 'out.jpg';
+
             $image_parts = explode(";base64,", $request->file);
             $image_type_aux = explode("image/", @$image_parts[0]);
             $image_type = @$image_type_aux[1];
             $image_base64 = base64_decode(@$image_parts[1]);
-
             $path = env('PATH_ATTENDANCE_UPLOAD'). '/'.$user->id.'/'.date('Y-m-d');
-            
+
             //Check if the directory already exists.
             if(!is_dir($path)){
                 //Directory does not exist, so lets create it.
                 mkdir($path, 0755, true);
             }
-
             // Upload PIC
             file_put_contents($path.'/'. $imageName, $image_base64);
             // resize image
             $img = \Image::make($path.'/'. $imageName);
-
             $img->resize( ceil( ($img->width() / 2 ) / 2), ceil(($img->height() /2) / 2));
-
             // save image
             $img->save($path.'/'. $imageName);
-            
+
             // inject attendance
             // replace time server
             $request->time = date('H:i');
             $request->date = date('Y-m-d');
-
             $item               = AbsensiItemMobile::whereDate('date', '=',$request->date)->where('user_id', $user->id)->first();
             if(!$item)
             {
-                $item               = new AbsensiItemMobile();   
+                $item               = new AbsensiItemMobile();
                 $item->user_id      = $user->id;
                 $item->date         = $request->date;
-                $item->timetable    = date('l', strtotime($request->date));   
-                $item->absensi_device_id = 10;           
-            }   
-
+                $item->timetable    = date('l', strtotime($request->date));
+                $item->absensi_device_id = 10;
+            }
             if($request->type == 1)
             {
-                if(empty($item->clock_in)) 
+                if(empty($item->clock_in))
                 {
                     $item->clock_in = $request->time;
                     $item->pic          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->long         = $request->long;
                     $item->lat          = $request->lat;
                 }
-                
+
                 if(isset($user->absensiSetting->clock_in))
                 {
                     $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
@@ -305,14 +328,13 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $jam = abs($jam);
                         $menit = abs($menit);
                         $jam = $jam <= 9 ? "0".$jam : $jam;
                         $menit = $menit <= 9 ? "0".$menit : $menit;
-
                         $item->late = $jam .':'. $menit;
                     }
                 }
@@ -325,18 +347,14 @@ class AttendanceController extends Controller
                     $item->pic_out          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->lat_out          = $request->lat;
                     $item->long_out         = $request->long;
-
                     $awal  = strtotime($item->date .' '. $item->clock_in .':00');
                     $akhir = strtotime($item->date .' '. $item->clock_out .':00');
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60) ) / 60;
-
                     $jam = $jam <= 9 ? "0".$jam : $jam;
-
-                    $item->work_time        = $jam .':'. $menit;  
+                    $item->work_time        = $jam .':'. $menit;
                 }
-
                 if(isset($user->absensiSetting->clock_out))
                 {
                     $akhir  = strtotime($item->date .' '. $user->absensiSetting->clock_out .':00');
@@ -344,20 +362,18 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $awal  = date_create($item->date .' '. $user->absensiSetting->clock_out .':00');
                         $akhir = date_create($item->date .' '. $request->time .':00'); // waktu sekarang, pukul 06:13
                         $diff  = date_diff( $akhir, $awal );
-                        
-                        $item->early = $diff->h .':'. $diff->i; 
+
+                        $item->early = $diff->h .':'. $diff->i;
                     }
                 }
             }
-
             $item->save();
-
             return response()->json(['status' => "success"], 200);
         }
         else
@@ -365,7 +381,6 @@ class AttendanceController extends Controller
             return response()->json(['status' => "error"], 200);
         }
     }
-
     /**
      * Get Send From Device
      * @param  Request $request
@@ -374,62 +389,55 @@ class AttendanceController extends Controller
     public function sendMhr(Request $request)
     {
         header('Access-Control-Allow-Origin: *');
-
         $user = UsersMhr::where('nik', $request->nik)->first();
         if($user)
         {
             if($request->type == 1)
-                $imageName = 'in.jpg';   
+                $imageName = 'in.jpg';
             else
-                $imageName = 'out.jpg';   
-            
+                $imageName = 'out.jpg';
+
             $image_parts = explode(";base64,", $request->file);
             $image_type_aux = explode("image/", @$image_parts[0]);
             $image_type = @$image_type_aux[1];
             $image_base64 = base64_decode(@$image_parts[1]);
-
             $path = env('PATH_ATTENDANCE_UPLOAD_MHR'). '/'.$user->id.'/'.date('Y-m-d');
-            
+
             //Check if the directory already exists.
             if(!is_dir($path)){
                 //Directory does not exist, so lets create it.
                 mkdir($path, 0755, true);
             }
-
             // Upload PIC
             file_put_contents($path.'/'. $imageName, $image_base64);
             // resize image
             $img = \Image::make($path.'/'. $imageName);
-
             $img->resize( ceil( ($img->width() / 2 ) / 2), ceil(($img->height() /2) / 2));
-
             $img->save($path.'/'. $imageName);
-            
+
             // inject attendance
             // replace time server
             $request->time = date('H:i');
             $request->date = date('Y-m-d');
-
             $item               = AbsensiItemMhr::whereDate('date', '=',$request->date)->where('user_id', $user->id)->first();
             if(!$item)
             {
-                $item               = new AbsensiItemMhr();   
+                $item               = new AbsensiItemMhr();
                 $item->user_id      = $user->id;
                 $item->date         = $request->date;
-                $item->timetable    = date('l', strtotime($request->date));   
-                $item->absensi_device_id = 10;           
-            }   
-
+                $item->timetable    = date('l', strtotime($request->date));
+                $item->absensi_device_id = 10;
+            }
             if($request->type == 1)
             {
-                if(empty($item->clock_in)) 
+                if(empty($item->clock_in))
                 {
                     $item->clock_in = $request->time;
                     $item->pic          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->long         = $request->long;
                     $item->lat          = $request->lat;
                 }
-                
+
                 if(isset($user->absensiSetting->clock_in))
                 {
                     $awal  = strtotime($item->date .' '. $user->absensiSetting->clock_in .':00');
@@ -437,14 +445,13 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-                    
+
                     if($diff > 0)
                     {
                         $jam = abs($jam);
                         $menit = abs($menit);
                         $jam = $jam <= 9 ? "0".$jam : $jam;
                         $menit = $menit <= 9 ? "0".$menit : $menit;
-
                         $item->late = $jam .':'. $menit;
                     }
                 }
@@ -457,19 +464,15 @@ class AttendanceController extends Controller
                     $item->pic_out          = '/'.$user->id.'/'.date('Y-m-d').'/'.$imageName;
                     $item->lat_out          = $request->lat;
                     $item->long_out         = $request->long;
-
                     $awal  = strtotime($item->date .' '. $item->clock_in .':00');
                     $akhir = strtotime($item->date .' '. $item->clock_out .':00');
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60) ) / 60;
-
                     $jam = $jam <= 9 ? "0".$jam : $jam;
                     $menit = $menit <= 9 ? "0".$menit : $menit;
-
-                    $item->work_time        = $jam .':'. $menit;  
+                    $item->work_time        = $jam .':'. $menit;
                 }
-
                 if(isset($user->absensiSetting->clock_out))
                 {
                     $akhir  = strtotime($item->date .' '. $user->absensiSetting->clock_out .':00');
@@ -477,23 +480,19 @@ class AttendanceController extends Controller
                     $diff  = $akhir - $awal;
                     $jam   = floor($diff / (60 * 60));
                     $menit = ($diff - $jam * (60 * 60)) / 60;
-
                     if($diff > 0)
                     {
                         $awal  = date_create($item->date .' '. $user->absensiSetting->clock_out .':00');
                         $akhir = date_create($item->date .' '. $request->time .':00'); // waktu sekarang, pukul 06:13
                         $diff  = date_diff( $akhir, $awal );
-                        
+
                         $i = $diff->i <= 9 ? "0".$diff->i : $diff->i;
                         $h = $diff->h <=9 ? "0". $diff->h : $diff->h;
-
-                        $item->early = $h .':'. $i; 
+                        $item->early = $h .':'. $i;
                     }
                 }
             }
-
             $item->save();
-
             return response()->json(['status' => "success"], 200);
         }
         else
@@ -501,9 +500,8 @@ class AttendanceController extends Controller
             return response()->json(['status' => "error"], 200);
         }
     }
-
     public function getAbsensi(Request $request)
-    {  
+    {
         // $user   = \App\User::where('absensi_number', $request->absensi_number)->first();
         // if($user){
         //     $data = new AbsensiItem();
@@ -511,7 +509,6 @@ class AttendanceController extends Controller
         //     $data->clock_in     = date('H:i');
         //     $data->user_id      = $user->id;
         //     $data->save();
-
         //     return response()->json(['status' => "success"], 200);
         // }else{
         //     $userMhr   = UsersMhr::where('absensi_number', $request->absensi_number)->first();
@@ -521,7 +518,7 @@ class AttendanceController extends Controller
         //         $dataMhr->clock_in     = date('H:i');
         //         $dataMhr->user_id      = $userMhr->id;
         //         $dataMhr->save();
-    
+
         //         return response()->json(['status' => "success"], 200);
         //     }else{
         //         return response()->json(['status' => "error"], 200);
@@ -529,8 +526,8 @@ class AttendanceController extends Controller
         // }
         $user   = UsersMhr::latest()->first();
         return $user;
-        
-       
-        
+
+
+
     }
 }
