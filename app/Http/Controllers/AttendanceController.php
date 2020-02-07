@@ -123,11 +123,11 @@ class AttendanceController extends Controller
         {
             if($request->sn == 'A3AG184660639') // Punya Empore
             {
-                $item = AbsensiItem::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime(date('Y-m-d H:i:s'))))->first();
+                $item = AbsensiItem::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime($request->checktime)))->first();
             }
             else
             {
-                $item = AbsensiItemMhr::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime(date('Y-m-d H:i:s'))))->first();
+                $item = AbsensiItemMhr::where('user_id', $user->id)->whereDate('date', date('Y-m-d', strtotime($request->checktime)))->first();
             }
             if(!$item) // Jika user tersebut belum pernah clock in, buat record baru
             {
@@ -181,47 +181,50 @@ class AttendanceController extends Controller
             {
 //                if($item->clock_out =="") // cek apakah belum clock out, kalau belum, update clock out
 //                {
-                    $item->clock_out = date('H:i', strtotime(date('Y-m-d H:i:s'))); // waktu sekarang
-                    if($item->clock_in!="") {
-                        $akhir = strtotime($item->date . ' ' . $item->clock_out . ':00'); //waktu checkin
-                        $awal = strtotime($item->date . ' ' . $item->clock_in . ':00'); // waktu checkout
-                        $diff = $akhir - $awal;
-                        if ($diff >= 0) // menghitung waktu kerja
-                        {
-                            $jam = floor($diff / (60 * 60));
-                            $menit = floor(($diff - $jam * (60 * 60)) / 60);
-                            $jam = $jam <= 9 ? "0" . $jam : $jam;
-                            $menit = $menit <= 9 ? "0" . $menit : $menit;
-                            $item->work_time = $jam . ':' . $menit;
-                        }
-                    }
-                    if(isset($user->shift_id))
+                $item->clock_out = date('H:i', strtotime(date('Y-m-d H:i:s'))); // waktu sekarang
+                if($item->clock_in!="") {
+                    $akhir = strtotime($item->date . ' ' . $item->clock_out . ':00'); //waktu checkin
+                    $awal = strtotime($item->date . ' ' . $item->clock_in . ':00'); // waktu checkout
+                    $diff = $akhir - $awal;
+                    if ($diff >= 0) // menghitung waktu kerja
                     {
-                        $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
-                        for($x = 0; $x < count($shiftDetail); $x++){
-                            if($shiftDetail[$x]->day == date('l', strtotime(date('Y-m-d H:i:s')))){
-                                $akhir  = strtotime($item->date .' '. $shiftDetail[$x]->clock_out .':00'); //waktu batas clockout
-                                $awal = strtotime(date('Y-m-d H:i:s')); // waktu checkout
-                                $diff  = $akhir - $awal; // selisih waktu batas dan checkout
-                                if($diff > 0) // jika yang bersangkutan clock out lebih awal
-                                {
-                                    $jam   = floor($diff / (60 * 60));
-                                    $menit = floor(($diff - $jam * (60 * 60)) / 60);
-                                    $jam = $jam <= 9 ? "0".$jam : $jam;
-                                    $menit = $menit <= 9 ? "0".$menit : $menit;
-                                    $item->early = $jam .':'. $menit;
-                                }
+                        $jam = floor($diff / (60 * 60));
+                        $menit = floor(($diff - $jam * (60 * 60)) / 60);
+                        $jam = $jam <= 9 ? "0" . $jam : $jam;
+                        $menit = $menit <= 9 ? "0" . $menit : $menit;
+                        $item->work_time = $jam . ':' . $menit;
+                    }
+                }
+                if(isset($user->shift_id))
+                {
+                    $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
+                    $arrDays = [];
+                    for($x = 0; $x < count($shiftDetail); $x++){
+                        array_push($arrDays, $shiftDetail[$x]->day);
+                    }
+
+                    if(in_array(date('l', strtotime(date('Y-m-d H:i:s'))), $arrDays)){
+                        for($y = 0; $y < count($shiftDetail); $y++){
+                            $akhir  = strtotime($item->date .' '. $shiftDetail[$y]->clock_out .':00'); //waktu batas clockout
+                            $awal = strtotime(date('Y-m-d H:i:s')); // waktu checkout
+                            $diff  = $akhir - $awal; // selisih waktu batas dan checkout
+                            if($diff > 0) // jika yang bersangkutan clock out lebih awal
+                            {
+                                $jam   = floor($diff / (60 * 60));
+                                $menit = floor(($diff - $jam * (60 * 60)) / 60);
+                                $jam = $jam <= 9 ? "0".$jam : $jam;
+                                $menit = $menit <= 9 ? "0".$menit : $menit;
+                                $item->early = $jam .':'. $menit;
                             }
                         }
-<<<<<<< HEAD
-                        else{
-                            $item->early = null;
-                        }
-
-
-=======
->>>>>>> 1ae0040bbf5199c26db4bce8e035441a5aa83fd9
                     }
+                    else{
+                        $item->early = null;
+                    }
+                }
+                else{
+                    $item->early = null;
+                }
 //                }
             }
             else
@@ -233,9 +236,14 @@ class AttendanceController extends Controller
                     if(isset($user->shift_id))
                     {
                         $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
+                        $arrDays = [];
                         for($x = 0; $x < count($shiftDetail); $x++){
-                            if($shiftDetail[$x]->day == date('l', strtotime(date('Y-m-d H:i:s')))){
-                                $awal  = strtotime($item->date .' '. $shiftDetail[$x]->clock_in .':00');
+                            array_push($arrDays, $shiftDetail[$x]->day);
+                        }
+
+                        if(in_array(date('l', strtotime(date('Y-m-d H:i:s'))), $arrDays)){
+                            for($y = 0; $y < count($shiftDetail); $y++){
+                                $awal  = strtotime($item->date .' '. $shiftDetail[$y]->clock_in .':00');
                                 $akhir = strtotime(date('Y-m-d H:i:s'));
                                 $diff  = $akhir - $awal;
                                 if($diff > 0){ // kalau telat
@@ -247,6 +255,12 @@ class AttendanceController extends Controller
                                 }
                             }
                         }
+                        else{
+                            $item->late = null;
+                        }
+                    }
+                    else{
+                        $item->late = null;
                     }
                 }
             }
