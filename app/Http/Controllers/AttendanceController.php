@@ -181,7 +181,7 @@ class AttendanceController extends Controller
             {
 //                if($item->clock_out =="") // cek apakah belum clock out, kalau belum, update clock out
 //                {
-                $item->clock_out = date('H:i', strtotime(date('Y-m-d H:i:s'))); // waktu sekarang
+                $item->clock_out = date('H:i', strtotime($request->checktime)); // waktu sekarang
                 if($item->clock_in!="") {
                     $akhir = strtotime($item->date . ' ' . $item->clock_out . ':00'); //waktu checkin
                     $awal = strtotime($item->date . ' ' . $item->clock_in . ':00'); // waktu checkout
@@ -232,7 +232,7 @@ class AttendanceController extends Controller
                 //0 = clockin
                 if($item->clock_in == "") // cek apakah belum clock in, kalau belum, update clock in
                 {
-                    $item->clock_in = date('H:i', strtotime(date('Y-m-d H:i:s')));
+                    $item->clock_in = date('H:i', strtotime($request->checktime));
                     if(isset($user->shift_id))
                     {
                         $shiftDetail = ShiftDetail::where('shift_id', $user->shift_id)->get();
@@ -265,8 +265,10 @@ class AttendanceController extends Controller
                 }
             }
             $timezone = Cabang::where('id', $user->cabang_id)->first();
-            $timezone = $timezone->timezone;
-            $item->timezone = $timezone;
+            if($timezone) {
+                $timezone = $timezone->timezone;
+                $item->timezone = $timezone;
+            }
             $item->save();
             return response()->json(['status' => "success"], 201);
         }
