@@ -101,10 +101,10 @@ class AttendanceController extends Controller
         if($user->cabang_id){
             $branch = Cabang::where('id', $user->cabang_id)->first();
             if($branch->timezone){
-                if($branch->timezone == 'WIB (GMT +7)'){
+                if($branch->timezone == 'WIB'){
                     date_default_timezone_set('Asia/Jakarta');
                 }
-                else if($branch->timezone == 'WITA (GMT +8)'){
+                else if($branch->timezone == 'WITA'){
                     date_default_timezone_set('Asia/Makassar');
                 }
                 else{
