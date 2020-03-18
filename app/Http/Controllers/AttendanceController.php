@@ -141,7 +141,7 @@ class AttendanceController extends Controller
                 }
                 // inject attendance
                 $item->user_id      = $user->id;
-                $item->date         = date('Y-m-d', strtotime(strtotime($request->checktime)));
+                $item->date         = date('Y-m-d', strtotime($request->checktime));
                 $item->absensi_device_id = 11;
                 $item->timetable    = date('l', strtotime(date('Y-m-d H:i:s')));
                 if($user->shift_id){
