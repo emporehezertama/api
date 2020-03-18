@@ -143,7 +143,7 @@ class AttendanceController extends Controller
                 $item->user_id      = $user->id;
                 $item->date         = date('Y-m-d', strtotime($request->checktime));
                 $item->absensi_device_id = 11;
-                $item->timetable    = date('l', strtotime(date('Y-m-d H:i:s')));
+                $item->timetable    = date('l', strtotime($request->checktime));
                 if($user->shift_id){
                     $shift = Shift::where('id', $user->shift_id)->first();
                     if($shift){
