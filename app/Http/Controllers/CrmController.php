@@ -48,6 +48,7 @@ class CrmController extends Controller
 
     public function insertUser(Request $request) 
     {
+        info($request->all());
         if($request->get('db_name')!=null) {
             Config::set("database.connections.mysql", [
                 "driver" => "mysql",
