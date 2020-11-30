@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Config;
 class CrmController extends Controller
 {
     /**
-     * Create a new controller instance.
+     * insert a new controller instance.
      *
      * @return void
      */
@@ -71,18 +71,18 @@ class CrmController extends Controller
 //            $newAdminModule->product_id = $module->crm_product_id;
 //            $newAdminModule->save();
 //        }
-        BaseSetting::create(['key'=>'mail_address','value'=>'noreply-emporeht@gmail.com','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'struktur_organisasi','value'=>'3','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'language','value'=>'en','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'app_debug','value'=>'false','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_jkk_company','value'=>'0.24','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_jkm_company','value'=>'0.3','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_jht_company','value'=>'3.7','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_pensiun_company','value'=>'2','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_kesehatan_company','value'=>'4','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
-        BaseSetting::create(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'mail_address','value'=>'noreply-emporeht@gmail.com','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'struktur_organisasi','value'=>'3','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'language','value'=>'en','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'app_debug','value'=>'false','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jkk_company','value'=>'0.24','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jkm_company','value'=>'0.3','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jht_company','value'=>'3.7','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_pensiun_company','value'=>'2','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_kesehatan_company','value'=>'4','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
         return response()->json(['status' => "success"], 201);
     }
 
