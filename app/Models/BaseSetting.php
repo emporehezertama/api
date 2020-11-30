@@ -8,4 +8,6 @@ class BaseSetting extends Model
 {
     protected $table = 'setting';
     protected $attributes = ['key','value','project_id'];
+    protected $fillable = ['key','value','project_id'];
+    protected $guarded = [];
 }
