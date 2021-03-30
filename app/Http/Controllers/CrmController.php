@@ -86,6 +86,46 @@ class CrmController extends Controller
         return response()->json(['status' => "success"], 201);
     }
 
+    public function insertUserOdoo(Request $request) 
+    {
+        info($request->all());
+        if($request->get('db_name')!=null) {
+            Config::set("database.connections.mysql", [
+                "driver" => "mysql",
+                "host" => env('DB_HOST'),
+                "database" => $request->get('db_name'),
+                "username" => env('DB_USERNAME'),
+                "password" => env('DB_PASSWORD')
+            ]);
+        }
+        $data                   = new BaseUsers();
+        $data->nik              = $request->get('user_name');
+        $data->password         = app('hash')->make($request->get('password'));
+        $data->access_id        = 3; //login admin
+        $data->project_id       = $request->get('project_id');
+        $data->save();
+//        $crmModules = CrmModule::all();
+//        foreach ($crmModules as $module){
+//            $newAdminModule = new CrmModuleAdmin();
+//            $newAdminModule->user_id = $data->id;
+//            $newAdminModule->product_id = $module->crm_product_id;
+//            $newAdminModule->save();
+//        }
+        BaseSetting::insert(['key'=>'mail_address','value'=>'noreply-emporeht@gmail.com','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'struktur_organisasi','value'=>'3','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'language','value'=>'en','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'app_debug','value'=>'false','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jkk_company','value'=>'0.24','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jkm_company','value'=>'0.3','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jht_company','value'=>'3.7','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_pensiun_company','value'=>'2','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_kesehatan_company','value'=>'4','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+        return response()->json(['status' => "success"], 201);
+    }
+
     public function updateModule(Request $request)
     {
         //delete dulu data dri crm module yang sudah ada kemudian nanti insert yang baru
