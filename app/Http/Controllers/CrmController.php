@@ -21,7 +21,6 @@ class CrmController extends Controller
         //
     }
 
-    //
     public function insertModule(Request $request) 
     {
         if($request->get('db_name')!=null) {
@@ -33,6 +32,7 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
+
         $data                   = new CrmModule();
         $data->project_id       = $request->get('project_id');
         $data->project_name     = $request->get('project_name');
@@ -43,6 +43,7 @@ class CrmController extends Controller
         }
         $data->modul_name       = $request->get('modul_name');
         $data->save();
+
         return response()->json(['status' => "success", "project_name" => $data->project_name], 201);
     }
 
@@ -58,6 +59,7 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
+
         $data                   = new BaseUsers();
         $data->nik              = $request->get('user_name');
         $data->password         = $request->get('password');
@@ -83,6 +85,7 @@ class CrmController extends Controller
         BaseSetting::insert(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+
         return response()->json(['status' => "success"], 201);
     }
 
@@ -98,6 +101,7 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
+
         $data                   = new BaseUsers();
         $data->nik              = $request->get('user_name');
         $data->password         = app('hash')->make($request->get('password'));
@@ -123,6 +127,7 @@ class CrmController extends Controller
         BaseSetting::insert(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+
         return response()->json(['status' => "success"], 201);
     }
 
@@ -138,6 +143,7 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
+
         CrmModule::where([
             'project_id'=>$request->get('project_id'),
             'crm_product_id'=>$request->get('crm_product_id')
@@ -168,6 +174,7 @@ class CrmController extends Controller
                 "password" => env('DB_PASSWORD')
             ]);
         }
+
         CrmModule::where([
             'project_id'=>$request->get('project_id'),
             'crm_product_id'=>$request->get('crm_product_id')
@@ -180,5 +187,39 @@ class CrmController extends Controller
              ])->delete();
 
         return response()->json(['status' => "success"], 201);
+    }
+
+    public function updateModuleOdoo(Request $request)
+    {
+        //delete dulu data dri crm module yang sudah ada kemudian nanti insert yang baru
+        if($request->get('db_name')!=null) {
+            Config::set("database.connections.mysql", [
+                "driver" => "mysql",
+                "host" => env('DB_HOST'),
+                "database" => $request->get('db_name'),
+                "username" => env('DB_USERNAME'),
+                "password" => env('DB_PASSWORD')
+            ]);
+        }
+
+        CrmModule::where('project_id', $request->get('project_id'))->delete();
+
+        $modul_name = explode('_delimiter_', $request->get('modul_name'));
+        foreach (json_decode($request->get('crm_product_id'), true) as $key => $value) {
+            $data                   = new CrmModule();
+            $data->project_id       = $request->get('project_id');
+            $data->project_name     = $request->get('project_name');
+            $data->client_name      = $request->get('client_name');
+            $data->crm_product_id   = $value;
+            if($request->get('limit_user') > 0){
+                $data->limit_user       = $request->get('limit_user');
+            }
+            $data->modul_name       = $modul_name[$key];
+            $data->save();
+        }
+
+        CrmModuleAdmin::join('users as u', 'user_id','=','u.id')->where('u.project_id', $request->get('project_id'))->whereNotIn('product_id', json_decode($request->get('crm_product_id'), true))->delete();
+
+        return response()->json(['status' => "success", "project_name" => $request->get('modul_name')], 201);
     }
 }
