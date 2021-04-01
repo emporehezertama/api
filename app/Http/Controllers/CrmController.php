@@ -95,10 +95,10 @@ class CrmController extends Controller
         if($request->get('db_name')!=null) {
             Config::set("database.connections.mysql", [
                 "driver" => "mysql",
-                "host" => env('DB_HOST'),
+                "host" => '149.129.235.107',
                 "database" => $request->get('db_name'),
-                "username" => env('DB_USERNAME'),
-                "password" => env('DB_PASSWORD')
+                "username" => 'root',
+                "password" => '3Mpore99'
             ]);
         }
 
@@ -195,10 +195,10 @@ class CrmController extends Controller
         if($request->get('db_name')!=null) {
             Config::set("database.connections.mysql", [
                 "driver" => "mysql",
-                "host" => env('DB_HOST'),
+                "host" => '149.129.235.107',
                 "database" => $request->get('db_name'),
-                "username" => env('DB_USERNAME'),
-                "password" => env('DB_PASSWORD')
+                "username" => 'root',
+                "password" => '3Mpore99'
             ]);
         }
 
