@@ -85,6 +85,7 @@ class CrmController extends Controller
         BaseSetting::insert(['key'=>'bpjs_jaminan_jht_employee','value'=>'2','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_jaminan_jp_employee','value'=>'1','project_id'=>$request->get('project_id')]);
         BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
+        BaseSetting::insert(['key'=>'face_detection','value'=>'1','project_id'=>$request->get('project_id')]);
 
         return response()->json(['status' => "success"], 201);
     }
