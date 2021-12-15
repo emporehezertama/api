@@ -98,7 +98,7 @@ class CrmController extends Controller
             $client = new \GuzzleHttp\Client();
             $response = $client->request('GET', $endpoint);
 
-            if($response->getStatusCode() == 200) {
+            if(true) {
                 Config::set("database.connections.mysql", [
                     "driver" => "mysql",
                     "host" => env('DB_HOST'),
