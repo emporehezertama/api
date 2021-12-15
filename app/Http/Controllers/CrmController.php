@@ -94,11 +94,11 @@ class CrmController extends Controller
     {
         info($request->all());
         if($request->get('db_name')!=null) {
-            $endpoint = env('EMHR_URL').'generate-new-database/'.$request->get('db_name');
-            $client = new \GuzzleHttp\Client();
-            $response = $client->request('GET', $endpoint);
+            // $endpoint = env('EMHR_URL').'generate-new-database/'.$request->get('db_name');
+            // $client = new \GuzzleHttp\Client();
+            // $response = $client->request('GET', $endpoint);
 
-            if(true) {
+            // if(true) {
                 Config::set("database.connections.mysql", [
                     "driver" => "mysql",
                     "host" => env('DB_HOST'),
@@ -126,7 +126,7 @@ class CrmController extends Controller
                 BaseSetting::insert(['key'=>'bpjs_kesehatan_employee','value'=>'1','project_id'=>$request->get('project_id')]);
                 BaseSetting::insert(['key'=>'attendance_face_detection','value'=>'0','project_id'=>$request->get('project_id')]);
             }
-        }
+        // }
 
         return response()->json(['status' => "success"], 201);
     }
