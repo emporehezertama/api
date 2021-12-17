@@ -6,6 +6,8 @@ require_once __DIR__.'/../vendor/autoload.php';
     dirname(__DIR__)
 ))->bootstrap();
 
+date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
+
 /*
 |--------------------------------------------------------------------------
 | Create The Application
@@ -33,6 +35,7 @@ $app->withFacades(TRUE,
 
 $app->register(Intervention\Image\ImageServiceProvider::class);
 $app->alias('Images',Intervention\Image\Facades\Image::class );
+$app->register(Illuminate\Database\Eloquent\LegacyFactoryServiceProvider::class);
 $app->withEloquent();
 
 /*
