@@ -22,8 +22,3 @@ jobs:
           git checkout master
           git pull
           composer install
-          chown -R apache:apache public
-          chown -R apache:apache storage
-          php artisan config:clear
-          php artisan cache:clear
-          php artisan view:clear
