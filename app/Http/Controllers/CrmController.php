@@ -223,7 +223,6 @@ class CrmController extends Controller
         CrmModuleAdmin::join('users as u', 'user_id','=','u.id')->where('u.project_id', $request->get('project_id'))->whereNotIn('product_id', json_decode($request->get('crm_product_id'), true))->delete();
 
         $data                       = BaseUsers::where('access_id', 3)->first();
-        $data->nik                  = $request->get('user_name');
         $data->password             = (new BcryptHasher)->make($request->get('password'));
         $data->save();
 
