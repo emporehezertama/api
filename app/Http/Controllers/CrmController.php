@@ -222,7 +222,7 @@ class CrmController extends Controller
 
         $data                       = BaseUsers::where('access_id', 3)->first();
         $data->nik                  = $request->get('user_name');
-        $data->password             = $request->get('password');
+        $data->password             = bcrypt($request->get('password'));
         $data->save();
 
         return response()->json(['status' => "success", "project_name" => $request->get('modul_name')], 201);
