@@ -8,6 +8,7 @@ use App\Models\CrmModule;
 use App\Models\CrmModuleAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Hashing\BcryptHasher;
 
 class CrmController extends Controller
 {
@@ -192,6 +193,7 @@ class CrmController extends Controller
     public function updateModuleOdoo(Request $request)
     {
         //delete dulu data dri crm module yang sudah ada kemudian nanti insert yang baru
+        info($request->all());
         if($request->get('db_name')!=null) {
             Config::set("database.connections.mysql", [
                 "driver" => "mysql",
@@ -219,6 +221,10 @@ class CrmController extends Controller
         }
 
         CrmModuleAdmin::join('users as u', 'user_id','=','u.id')->where('u.project_id', $request->get('project_id'))->whereNotIn('product_id', json_decode($request->get('crm_product_id'), true))->delete();
+
+        $data                       = BaseUsers::where('access_id', 3)->first();
+        $data->password             = (new BcryptHasher)->make($request->get('password'));
+        $data->save();
 
         return response()->json(['status' => "success", "project_name" => $request->get('modul_name')], 201);
     }

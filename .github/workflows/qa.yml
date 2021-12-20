@@ -1,0 +1,24 @@
+name: Update QA
+on:
+  push:
+    branches: [ development ]
+jobs:
+  build:
+    name: Process
+    runs-on: ubuntu-latest
+    steps:
+    - name: Executing server update
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /var/www/${{ secrets.DIRECTORY }}
+          git status
+          git checkout .
+          git clean -f
+          git checkout development
+          git pull
+          composer install
