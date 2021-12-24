@@ -1,0 +1,24 @@
+name: Update Production
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    name: Process
+    runs-on: ubuntu-latest
+    steps:
+    - name: Executing server update
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PRODUCTION_PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /var/www/${{ secrets.PRODUCTION_DIRECTORY }}
+          git status
+          git checkout .
+          git clean -f
+          git checkout master
+          git pull
+          composer install
